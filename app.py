@@ -755,13 +755,6 @@ class AITextDetectorApp:
 def main():
     """Main function to run the app"""
     # Create necessary directories
-    
-        st.set_page_config(
-        page_title=Config.APP_TITLE,
-        page_icon="🤖",
-        layout="wide"
-    )
-    
     st.title(Config.APP_TITLE)
     st.markdown(Config.APP_DESCRIPTION)
     os.makedirs("database", exist_ok=True)
