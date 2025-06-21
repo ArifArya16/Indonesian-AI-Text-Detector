@@ -10,13 +10,6 @@ import json
 import logging
 import os
 
-# Import custom modules
-from config import Config
-from auth import Auth
-from database import Database
-from model_handler import ModelHandler
-from utils import Utils
-
 # Setup logging yang aman untuk Streamlit Cloud
 def setup_logging():
     """Setup logging configuration"""
@@ -36,6 +29,22 @@ def setup_logging():
 
 # Setup logging
 setup_logging()
+
+# Import custom modules
+try:
+    from config import Config
+    # Setup directories jika diperlukan
+    Config.setup_directories()
+    
+    from auth import Auth
+    from database import Database
+    from model_handler import ModelHandler
+    from utils import Utils
+    
+except Exception as e:
+    st.error(f"Error importing modules: {str(e)}")
+    logging.error(f"Import error: {str(e)}")
+    st.stop()
 
 class AITextDetectorApp:
     result = None
@@ -746,6 +755,15 @@ class AITextDetectorApp:
 def main():
     """Main function to run the app"""
     # Create necessary directories
+    
+        st.set_page_config(
+        page_title=Config.APP_TITLE,
+        page_icon="🤖",
+        layout="wide"
+    )
+    
+    st.title(Config.APP_TITLE)
+    st.markdown(Config.APP_DESCRIPTION)
     os.makedirs("database", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
     
