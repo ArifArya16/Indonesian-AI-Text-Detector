@@ -10,41 +10,24 @@ import json
 import logging
 import os
 
-# Setup logging yang aman untuk Streamlit Cloud
-def setup_logging():
-    """Setup logging configuration"""
-    # Basic console logging untuk Streamlit Cloud
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[logging.StreamHandler()]
-    )
-    
-    # Tambahan: jika ingin tetap menggunakan file logging di development
-    # Uncomment baris di bawah ini untuk development local
-    # try:
-    #     logging.getLogger().addHandler(logging.FileHandler('app.log'))
-    # except:
-    #     pass
-
-# Setup logging
-setup_logging()
-
 # Import custom modules
-try:
-    from config import Config
-    # Setup directories jika diperlukan
-    Config.setup_directories()
-    
-    from auth import Auth
-    from database import Database
-    from model_handler import ModelHandler
-    from utils import Utils
-    
-except Exception as e:
-    st.error(f"Error importing modules: {str(e)}")
-    logging.error(f"Import error: {str(e)}")
-    st.stop()
+from config import Config
+from auth import Auth
+from database import Database
+from model_handler import ModelHandler
+from utils import Utils
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, Config.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(Config.LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 class AITextDetectorApp:
     result = None
@@ -512,17 +495,18 @@ class AITextDetectorApp:
                         st.session_state.login = True
                         st.rerun()
             
-            if st.session_state.authenticated == False:
+            
+            if st.session_state.authenticated == True:
+                
                 # Save result
                 prediction_id = self.db.save_prediction(
-                    "2",
+                    self.auth.get_current_user_id(),
                     input_text,
                     st.session_state.analisis_text['ai_probability'],
                     st.session_state.analisis_text['is_ai_generated'],
                     st.session_state.analisis_text['highlighted_parts']
                 )
-            
-            if st.session_state.authenticated == True:
+                
                 # Download result
                 col1, col2 = st.columns(2)
                 with col1:
@@ -755,8 +739,6 @@ class AITextDetectorApp:
 def main():
     """Main function to run the app"""
     # Create necessary directories
-    st.title(Config.APP_TITLE)
-    st.markdown(Config.APP_DESCRIPTION)
     os.makedirs("database", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
     
