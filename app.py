@@ -17,17 +17,25 @@ from database import Database
 from model_handler import ModelHandler
 from utils import Utils
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, Config.LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(Config.LOG_FILE),
-        logging.StreamHandler()
-    ]
-)
+# Setup logging yang aman untuk Streamlit Cloud
+def setup_logging():
+    """Setup logging configuration"""
+    # Basic console logging untuk Streamlit Cloud
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    
+    # Tambahan: jika ingin tetap menggunakan file logging di development
+    # Uncomment baris di bawah ini untuk development local
+    # try:
+    #     logging.getLogger().addHandler(logging.FileHandler('app.log'))
+    # except:
+    #     pass
 
-logger = logging.getLogger(__name__)
+# Setup logging
+setup_logging()
 
 class AITextDetectorApp:
     result = None
